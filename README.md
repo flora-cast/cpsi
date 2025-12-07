@@ -1,2 +1,3 @@
-# hclos
-Package manager for Lilith Linux
+# cpsi
+
+Package Manager for **Shary OS**
