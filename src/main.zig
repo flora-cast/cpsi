@@ -309,7 +309,7 @@ fn executeCommand(allocator: std.mem.Allocator, parsed: ParsedCommand) !void {
             std.debug.print("clean command not yet implemented\n", .{});
         },
         .version => {
-            std.debug.print("hclos version {s}\n", .{VERSION});
+            std.debug.print("cpsi version {s}\n", .{VERSION});
             std.debug.print("with zig {s}\n", .{ZIG_VERSION});
         },
     }

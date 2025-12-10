@@ -87,7 +87,7 @@ fn resolveDependenciesRecursive(
     var found_repo: ?repo_conf.Repository = null;
 
     for (parsed_repos.repo) |repo| {
-        const read_repo = try std.fmt.allocPrint(allocator, "{s}/{s}/{s}/index", .{ prefix, constants.hclos_repos, repo.name });
+        const read_repo = try std.fmt.allocPrint(allocator, "{s}/{s}/{s}/index", .{ prefix, constants.cpsi_repos, repo.name });
         defer allocator.free(read_repo);
 
         const readed = reader.read_packages(allocator, read_repo) catch {

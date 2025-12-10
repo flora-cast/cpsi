@@ -14,11 +14,11 @@ pub fn unpack(
     const name = std.mem.sliceTo(&package_info.name, 0);
     const version = std.mem.sliceTo(&package_info.version, 0);
 
-    // Create directory /var/lib/hclos/installed directory if not exist
+    // Create directory /var/lib/cpsi/installed directory if not exist
     const installed_dir = if (std.mem.eql(u8, prefix, "/"))
-        constants.hclos_installed_dir
+        constants.cpsi_installed_dir
     else
-        try std.fmt.allocPrint(allocator, "{s}{s}", .{ prefix, constants.hclos_installed_dir });
+        try std.fmt.allocPrint(allocator, "{s}{s}", .{ prefix, constants.cpsi_installed_dir });
 
     defer if (!std.mem.eql(u8, prefix, "/")) allocator.free(installed_dir);
     try utils.makeDirAbsoluteRecursive(allocator, installed_dir);

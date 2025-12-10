@@ -11,7 +11,7 @@ pub fn list_packages(allocator: std.mem.Allocator) !void {
     const repository_list = repos.value.repo;
 
     for (repository_list) |repo| {
-        const index_path = try std.fmt.allocPrint(allocator, "{s}/{s}/index", .{ constants.hclos_repos, repo.name });
+        const index_path = try std.fmt.allocPrint(allocator, "{s}/{s}/index", .{ constants.cpsi_repos, repo.name });
         defer allocator.free(index_path);
 
         const index = try package.reader.read_packages(allocator, index_path);

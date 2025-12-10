@@ -15,7 +15,7 @@ pub fn search(allocator: std.mem.Allocator, pkgs: [][]const u8) !void {
     var found = false;
     for (pkgs) |pkg| {
         for (parsed_repos.value.repo) |repo| {
-            const read_repo = try std.fmt.allocPrint(allocator, "{s}/{s}/index", .{ constants.hclos_repos, repo.name });
+            const read_repo = try std.fmt.allocPrint(allocator, "{s}/{s}/index", .{ constants.cpsi_repos, repo.name });
             defer allocator.free(read_repo);
             const readed = try reader.read_packages(allocator, read_repo);
             defer allocator.destroy(readed);

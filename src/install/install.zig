@@ -51,7 +51,7 @@ fn real_install_package(allocator: std.mem.Allocator, pkgs: [][]const u8, option
     defer parsed_repos.deinit();
 
     // create cache directory
-    const prefix_cache = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ prefix, constants.hclos_cache });
+    const prefix_cache = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ prefix, constants.cpsi_cache });
     defer allocator.free(prefix_cache);
     defer deleteTree(prefix_cache);
 
@@ -203,7 +203,7 @@ fn install_from_file(allocator: std.mem.Allocator, hb_file: []const u8, clos_fil
         try scripts.install.pre_install(allocator, hb_file, prefix, is_prefix);
     }
 
-    try unpack.unpack(allocator, hb_file, , prefix: []const u8)
+    try unpack.unpack(allocator, hb_file, clos_file, prefix);
 }
 
 fn getPackageInfo(
@@ -212,7 +212,7 @@ fn getPackageInfo(
     repo: repo_conf.Repository,
     prefix: []const u8,
 ) !package.structs.Package {
-    const prefix_cache = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ prefix, constants.hclos_repos });
+    const prefix_cache = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ prefix, constants.cpsi_repos });
     defer allocator.free(prefix_cache);
     const read_repo = try std.fmt.allocPrint(allocator, "{s}/{s}/index", .{ prefix_cache, repo.name });
     defer allocator.free(read_repo);
@@ -232,7 +232,7 @@ fn getPackageInfo(
 }
 
 fn integrity_check(allocator: std.mem.Allocator, package_name: []const u8, current_index: usize, total_packages: usize, prefix: []const u8) !void {
-    const prefix_cache = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ prefix, constants.hclos_cache });
+    const prefix_cache = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ prefix, constants.cpsi_cache });
     defer allocator.free(prefix_cache);
 
     try info(allocator, "check: {s} ({d}/{d})", .{ package_name, current_index, total_packages });

@@ -1,9 +1,9 @@
 const std = @import("std");
 
-pub const hclos_repos_conf = "/etc/hclos/repository.toml";
-pub const hclos_config = "/etc/hclos/config.toml";
+pub const cpsi_repos_conf = "/etc/cpsi/repository.toml";
+pub const cpsi_config = "/etc/cpsi/config.toml";
 
-pub const hclos_cache = "/var/cache/hclos/downloads";
-pub const var_lib_hclos = "/var/lib/hclos";
-pub const hclos_repos = "/var/lib/hclos/repository";
-pub const hclos_installed_dir = "/var/lib/hclos/installed";
+pub const cpsi_cache = "/var/cache/cpsi/downloads";
+pub const var_lib_cpsi = "/var/lib/cpsi";
+pub const cpsi_repos = "/var/lib/cpsi/repository";
+pub const cpsi_installed_dir = "/var/lib/cpsi/installed";

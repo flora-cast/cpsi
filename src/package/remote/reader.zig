@@ -8,7 +8,7 @@ pub fn read_packages(allocator: std.mem.Allocator, path: []const u8) !*package.P
     var file = std.fs.openFileAbsolute(path, .{}) catch |err| {
         if (err == error.FileNotFound) {
             std.debug.print("Package list not found.\n", .{});
-            std.debug.print("try `hclos update`\n", .{});
+            std.debug.print("try `cpsi update`\n", .{});
             std.debug.print("If you want to update the package list to a prefix, add the --prefix option to the update command.\n", .{});
             return error.PackagesBinFileNotFound;
         }

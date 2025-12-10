@@ -60,7 +60,7 @@ pub fn real_update(alc: std.mem.Allocator, prefix: []const u8) !void {
 }
 
 fn fetch_files(allocator: std.mem.Allocator, prefix: []const u8, repository_name: []const u8, repository_url: []const u8) !void {
-    const repository_dir = try std.fmt.allocPrint(allocator, "{s}/{s}/{s}", .{ prefix, constants.hclos_repos, repository_name });
+    const repository_dir = try std.fmt.allocPrint(allocator, "{s}/{s}/{s}", .{ prefix, constants.cpsi_repos, repository_name });
     defer allocator.free(repository_dir);
 
     const index_file = try std.fmt.allocPrint(allocator, "{s}/index", .{repository_dir});
@@ -82,7 +82,7 @@ fn fetch_files(allocator: std.mem.Allocator, prefix: []const u8, repository_name
 }
 
 pub fn check_hash(alc: std.mem.Allocator, prefix: []const u8, name: []const u8) !bool {
-    const savedir = try std.fmt.allocPrint(alc, "{s}/{s}/{s}", .{ prefix, constants.hclos_repos, name });
+    const savedir = try std.fmt.allocPrint(alc, "{s}/{s}/{s}", .{ prefix, constants.cpsi_repos, name });
     defer alc.free(savedir);
 
     const index = try std.fmt.allocPrint(alc, "{s}/index", .{savedir});

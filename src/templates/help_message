@@ -1,4 +1,4 @@
-usage: hclos <command> [options] [args]
+usage: cpsi <command> [options] [args]
 
 commands:
   update        update repository indexes

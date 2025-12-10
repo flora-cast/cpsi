@@ -17,12 +17,12 @@ pub fn parse_repos(allocator: std.mem.Allocator) !toml.Parsed(ReposConf) {
     var parser = toml.Parser(ReposConf).init(allocator);
     defer parser.deinit();
 
-    if (!is_exists(constants.hclos_repos_conf)) {
-        try utils.makeDirAbsoluteRecursive(allocator, "/etc/hclos");
-        try std.fs.cwd().writeFile(.{ .data = repos_template, .sub_path = constants.hclos_repos_conf });
+    if (!is_exists(constants.cpsi_repos_conf)) {
+        try utils.makeDirAbsoluteRecursive(allocator, "/etc/cpsi");
+        try std.fs.cwd().writeFile(.{ .data = repos_template, .sub_path = constants.cpsi_repos_conf });
     }
 
-    const result = try parser.parseFile(constants.hclos_repos_conf);
+    const result = try parser.parseFile(constants.cpsi_repos_conf);
 
     return result;
 }
