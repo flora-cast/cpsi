@@ -15,7 +15,7 @@ clean:
 	rm -rf ./.zig-cache
 
 install:
-	install -Dm755 ./zig-out/bin/cpsi "$(PREFIX)/usr/bin/cpsi"
+	install -Dm755 ./zig-out/bin/cpsi "$(PREFIX)/usr/sbin/cpsi"
 
 fmt:
 	find src -type f -name '*.zig' -exec zig fmt {} +

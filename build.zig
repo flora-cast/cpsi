@@ -20,6 +20,12 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // for zstig
+    const dep_zstig = b.dependency("zstig", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
     // ========== MODULES ===========
 
     const constants = b.addModule("constants", .{
@@ -89,6 +95,12 @@ pub fn build(b: *std.Build) void {
         .{ .name = "installed", .module = installed },
         .{ .name = "scripts", .module = scripts },
     } });
+    install.addImport("zstig", dep_zstig.module("zstig"));
+    install.addCSourceFile(.{
+        .file = b.path("src/microtar.c"),
+        .flags = &.{"-std=c99"},
+    });
+    install.addIncludePath(b.path("src"));
 
     const search = b.addModule("search", .{ .root_source_file = b.path("src/search/search.zig"), .target = target, .link_libc = true, .imports = &.{
         .{ .name = "info", .module = info },

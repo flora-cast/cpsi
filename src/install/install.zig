@@ -53,7 +53,7 @@ fn real_install_package(allocator: std.mem.Allocator, pkgs: [][]const u8, option
     // create cache directory
     const prefix_cache = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ prefix, constants.cpsi_cache });
     defer allocator.free(prefix_cache);
-    defer deleteTree(prefix_cache);
+    //defer deleteTree(prefix_cache);
 
     // prefix cache の作成
     try utils.makeDirAbsoluteRecursive(allocator, prefix_cache);
@@ -203,7 +203,7 @@ fn install_from_file(allocator: std.mem.Allocator, hb_file: []const u8, clos_fil
         try scripts.install.pre_install(allocator, hb_file, prefix, is_prefix);
     }
 
-    try unpack.unpack(allocator, hb_file, clos_file, prefix);
+    try unpack.unpack(allocator, clos_file, hb_file, prefix);
 }
 
 fn getPackageInfo(

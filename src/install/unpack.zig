@@ -1,9 +1,12 @@
 const std = @import("std");
-const zstd = std.compress.zstd;
+const zstig = @import("zstig");
 const package = @import("package");
 const constants = @import("constants");
 const utils = @import("utils");
 const installed = @import("installed");
+const c = @cImport({
+    @cInclude("microtar.h");
+});
 
 pub fn unpack(
     allocator: std.mem.Allocator,
@@ -59,21 +62,36 @@ pub fn unpack(
     try installed.writer.writePackageList(allocator, file, installed_package);
 }
 
+pub fn decompressFileBuffered(
+    input_path: []const u8,
+    output_path: []const u8,
+    allocator: std.mem.Allocator,
+) !void {
+    std.debug.print("input: {s}\noutput: {s}\n", .{ input_path, output_path });
+    const input_file = try std.fs.openFileAbsolute(input_path, .{});
+    defer input_file.close();
+
+    const output_file = try std.fs.createFileAbsolute(output_path, .{});
+    defer output_file.close();
+
+    try zstig.decompressStream(
+        input_file.deprecatedReader(),
+        output_file.deprecatedWriter(),
+        allocator,
+    );
+}
+
 fn unpackTarZstd(
     allocator: std.mem.Allocator,
     package_file: []const u8,
     prefix: []const u8,
 ) ![][]const u8 {
     // Open package file
-    const file = try std.fs.openFileAbsolute(package_file, .{ .mode = .read_only });
-    defer file.close();
 
-    var buffer_zstd: [2042]u8 = undefined;
-    var reader = file.reader(&buffer_zstd);
+    const decompressed_tar_file = try std.fmt.allocPrint(allocator, "{s}.tmp", .{package_file});
+    defer allocator.free(decompressed_tar_file);
 
-    var window_buf: [zstd.default_window_len + zstd.block_size_max + 1]u8 = undefined;
-    var zstd_stream = zstd.Decompress.init(&reader.interface, &window_buf, .{});
-    const uncompressed_reader = &zstd_stream.reader;
+    try decompressFileBuffered(package_file, decompressed_tar_file, allocator);
 
     // initialize pathlist
     var pathlist = std.ArrayList([]const u8){};
@@ -88,61 +106,72 @@ fn unpackTarZstd(
     var prefix_dir = try std.fs.openDirAbsolute(prefix, .{});
     defer prefix_dir.close();
 
-    var file_name_buf: [std.fs.max_path_bytes]u8 = undefined;
-    var link_name_buf: [std.fs.max_name_bytes]u8 = undefined;
-
-    var tar_iter = std.tar.Iterator.init(uncompressed_reader, .{ .file_name_buffer = &file_name_buf, .link_name_buffer = &link_name_buf });
-
-    // process tar file
-    while (try tar_iter.next()) |tar_file| {
-        switch (tar_file.kind) {
-            .directory => {
-                try prefix_dir.makePath(tar_file.name);
-                const path = try allocator.dupe(u8, tar_file.name);
-                try pathlist.append(allocator, path);
-            },
-            .file => {
-                if (std.fs.path.dirname(tar_file.name)) |dir_name| {
-                    try prefix_dir.makePath(dir_name);
-                }
-
-                var out_file = try prefix_dir.createFile(tar_file.name, .{
-                    .mode = tar_file.mode,
-                });
-                defer out_file.close();
-
-                var buffer: [2 * 1024]u8 = undefined;
-
-                var file_writer = out_file.writer(&buffer);
-                try tar_iter.streamRemaining(tar_file, &file_writer.interface);
-                const path = try allocator.dupe(u8, tar_file.name);
-                try pathlist.append(allocator, path);
-            },
-            .sym_link => {
-                // Check parent directory exists
-                if (std.fs.path.dirname(tar_file.name)) |dir_name| {
-                    try prefix_dir.makePath(dir_name);
-                }
-
-                // Create symlink
-                prefix_dir.symLink(tar_file.link_name, tar_file.name, .{}) catch |err| {
-                    if (err == error.PathAlreadyExists) {
-                        continue;
-                    }
-                    std.debug.print("Warning: Failed to create symlink {s} -> {s}: {}\n", .{
-                        tar_file.name,
-                        tar_file.link_name,
-                        err,
-                    });
-                };
-
-                const path = try allocator.dupe(u8, tar_file.name);
-                try pathlist.append(allocator, path);
-            },
-        }
-    }
+    try extractTar(allocator, &pathlist, decompressed_tar_file, prefix);
 
     return try pathlist.toOwnedSlice(allocator);
+}
+
+pub fn extractTar(allocator: std.mem.Allocator, extracted_array: *std.array_list.Aligned([]const u8, null), tar_path: []const u8, output_dir: []const u8) !void {
+    var tar: c.mtar_t = undefined;
+    var header: c.mtar_header_t = undefined;
+
+    if (c.mtar_open(&tar, tar_path.ptr, "r") != c.MTAR_ESUCCESS) {
+        return error.CannotOpenTar;
+    }
+    defer _ = c.mtar_close(&tar);
+
+    while (c.mtar_read_header(&tar, &header) != c.MTAR_ENULLRECORD) {
+        const filename: [:0]const u8 = std.mem.span(@as([*:0]const u8, @ptrCast(&header.name)));
+
+        const filename_constu8: []const u8 = std.mem.sliceTo(filename, 0);
+        std.debug.print("decomp: {s}\n", .{filename_constu8});
+        const duped = try allocator.dupe(u8, filename_constu8);
+        try extracted_array.append(allocator, duped);
+
+        const full_path = try std.fs.path.join(allocator, &[_][]const u8{ output_dir, filename });
+        defer allocator.free(full_path);
+
+        switch (header.type) {
+            c.MTAR_TDIR => {
+                // ディレクトリ作成
+                try std.fs.cwd().makePath(full_path);
+            },
+            c.MTAR_TREG => {
+                // 通常ファイル
+                const dir = std.fs.path.dirname(full_path);
+                if (dir) |d| try std.fs.cwd().makePath(d);
+
+                const file = try std.fs.cwd().createFile(full_path, .{});
+                defer file.close();
+
+                const buffer = try allocator.alloc(u8, header.size);
+                defer allocator.free(buffer);
+
+                if (c.mtar_read_data(&tar, buffer.ptr, header.size) != c.MTAR_ESUCCESS) {
+                    return error.ReadFailed;
+                }
+                try file.writeAll(buffer);
+            },
+            c.MTAR_TSYM => {
+                // シンボリックリンク
+                const target = std.mem.span(@as([*:0]const u8, @ptrCast(&header.linkname)));
+
+                const dir = std.fs.path.dirname(full_path);
+                if (dir) |d| try std.fs.cwd().makePath(d);
+
+                // 既存のシンボリックリンクを削除（存在する場合）
+                std.fs.cwd().deleteFile(full_path) catch {};
+
+                try std.posix.symlink(target, full_path);
+            },
+            else => {
+                // その他のタイプはスキップ
+                std.debug.print("Skipping unsupported type: {}\n", .{header.type});
+            },
+        }
+
+        _ = c.mtar_next(&tar);
+    }
 }
 
 pub fn splitToArray(

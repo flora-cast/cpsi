@@ -40,6 +40,10 @@
             .url = "git+https://github.com/sam701/zig-toml#3aaeb0bf14935eabae118196f7949b404a42f8ea",
             .hash = "toml-0.3.0-bV14BTd8AQA-wZERtB3dvRE3eSZ-m48AyXFUGkZ_Tm3d",
         },
+        .zstig = .{
+            .url = "https://github.com/flora-cast/zstig/archive/refs/tags/0.1.2.zip",
+            .hash = "zstig-0.1.1-dIJrnot0AgCONQksOmYVKUGMZSD78VUO8HbqRhRJ0T9X",
+        },
     },
     .paths = .{
         "build.zig",
