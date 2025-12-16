@@ -3,3 +3,6 @@ zig-out/
 *.o
 external-bin
 test
+[#]*[#]
+.[#]*[#]
+.[#]*
