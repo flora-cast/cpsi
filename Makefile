@@ -3,9 +3,6 @@ PREFIX ?= /
 
 .PHONY: all install fmt
 
-setup: 
-	cd ./vendor/libtar/ && ./configure 
-
 
 all:
 	zig build -Doptimize=ReleaseFast
