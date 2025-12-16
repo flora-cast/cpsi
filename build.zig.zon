@@ -40,7 +40,7 @@
     }, .zstig = .{
         .url = "https://github.com/flora-cast/zstig/archive/refs/tags/0.1.2.zip",
         .hash = "zstig-0.1.1-dIJrnot0AgCONQksOmYVKUGMZSD78VUO8HbqRhRJ0T9X",
-    }, .libtar = .{ .url = "https://github.com/flora-cast/libtar/archive/refs/tags/main.zip", .hash = "N-V-__8AAE12GADWrQNDov3HWldMDymf5Mkoa_ocoGgUCXI0" } },
+    } },
     .paths = .{
         "build.zig",
         "build.zig.zon",
