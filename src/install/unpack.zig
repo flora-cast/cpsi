@@ -96,12 +96,13 @@ fn unpackTarZstd(
 
     // initialize pathlist
     var pathlist = std.ArrayList([]const u8){};
-    errdefer {
-        for (pathlist.items) |path| {
-            allocator.free(path);
-        }
-        pathlist.deinit(allocator);
-    }
+
+    //errdefer {
+    //   for (pathlist.items) |path| {
+    //      allocator.free(path);
+    //  }
+    //  pathlist.deinit(allocator);
+    //}
 
     // open prefix directory
     var prefix_dir = try std.fs.openDirAbsolute(prefix, .{});
@@ -142,8 +143,24 @@ pub fn extractTar(allocator: std.mem.Allocator, extracted_array: *std.array_list
 
                 try iter.streamRemaining(entry, &out_writer.interface);
             },
-            else => {
-                std.debug.print("\\TODO\n", .{});
+
+            .directory => {
+                try outDir.makePath(path);
+                try extracted_array.append(allocator, path);
+            },
+
+            .sym_link => {
+                if (std.fs.path.dirname(path)) |dir_name| {
+                    try outDir.makePath(dir_name);
+                }
+
+                outDir.symLink(entry.link_name, path, .{}) catch |err| {
+                    if (err == error.PathAlreadyExists) {
+                        continue;
+                    }
+
+                    std.debug.print("Warning: Failed to create symlink {s} -> {s}: {}\n", .{ path, entry.link_name, err });
+                };
             },
         }
     }
