@@ -4,10 +4,6 @@ const package = @import("package");
 const constants = @import("constants");
 const utils = @import("utils");
 const installed = @import("installed");
-const c = @cImport({
-    @cInclude("archive.h");
-    @cInclude("archive_entry.h");
-});
 
 pub fn unpack(
     allocator: std.mem.Allocator,
@@ -96,6 +92,7 @@ fn unpackTarZstd(
 
     // initialize pathlist
     var pathlist = std.ArrayList([]const u8){};
+    defer pathlist.deinit(allocator);
 
     //errdefer {
     //   for (pathlist.items) |path| {
@@ -146,7 +143,7 @@ pub fn extractTar(allocator: std.mem.Allocator, extracted_array: *std.array_list
 
             .directory => {
                 try outDir.makePath(path);
-                try extracted_array.append(allocator, path);
+                // Path already appended on line 128, don't append again
             },
 
             .sym_link => {
