@@ -7,7 +7,7 @@ const list = @import("list");
 const help_message = @embedFile("./templates/help_message");
 
 // rowan -> pre-alpha | amary -> alpha | flower -> beta | wood -> stable
-const VERSION = "0.1.0 (rowan)";
+const VERSION = "0.1.0 (amary)";
 const ZIG_VERSION = builtin.zig_version_string;
 
 const Command = enum {
