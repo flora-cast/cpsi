@@ -131,7 +131,11 @@ pub fn extractTar(allocator: std.mem.Allocator, extracted_array: *std.array_list
 
         switch (entry.kind) {
             .file => {
-                const out_file = try outDir.createFile(entry.name, .{});
+                if (std.fs.path.dirname(path)) |dir_name| {
+                    try outDir.makePath(dir_name);
+                }
+
+                const out_file = try outDir.createFile(entry.name, .{ .mode = entry.mode });
                 defer out_file.close();
 
                 var buf: [4096]u8 = undefined;
