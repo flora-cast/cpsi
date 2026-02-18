@@ -112,6 +112,11 @@ pub fn build(b: *std.Build) void {
         .{ .name = "utils", .module = utils },
     } });
 
+    const clean = b.addModule("clean", .{ .root_source_file = b.path("src/clean/clean.zig"), .target = target, .link_libc = true, .imports = &.{
+        .{ .name = "constants", .module = constants },
+        .{ .name = "utils", .module = utils },
+    } });
+
     const exe = b.addExecutable(.{
         .name = "cpsi",
         .linkage = .static,
@@ -126,6 +131,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "hash", .module = hash },
             .{ .name = "installed", .module = installed },
             .{ .name = "search", .module = search },
+            .{ .name = "clean", .module = clean },
             .{ .name = "list", .module = list },
             .{ .name = "package", .module = package },
         } }),

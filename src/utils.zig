@@ -57,7 +57,10 @@ pub fn copyFile(allocator: std.mem.Allocator, src_path: []const u8, dest_path: [
     const dest_file = try std.fs.createFileAbsolute(dest_path, .{});
     defer dest_file.close();
 
-    try dest_file.writeAll(src_file.deprecatedReader().readAllAlloc(allocator, std.math.maxInt(usize)) catch unreachable);
+    const data = try src_file.deprecatedReader().readAllAlloc(allocator, std.math.maxInt(usize));
+    defer allocator.free(data);
+
+    try dest_file.writeAll(data);
 }
 
 pub fn download(allocator: std.mem.Allocator, url: []const u8, path: []const u8) !void {

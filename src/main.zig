@@ -4,6 +4,7 @@ const update = @import("update");
 const install = @import("install");
 const search = @import("search");
 const list = @import("list");
+const clean = @import("clean");
 const help_message = @embedFile("./templates/help_message");
 
 // rowan -> pre-alpha | amary -> alpha | flower -> beta | wood -> stable
@@ -47,6 +48,7 @@ const CommandOptions = union(enum) {
     update: UpdateOptions,
     search: SearchOptions,
     remove: RemoveOptions,
+    clean: CleanOptions,
     none,
 
     const InstallOptions = struct {
@@ -68,6 +70,10 @@ const CommandOptions = union(enum) {
     const RemoveOptions = struct {
         prefix: ?[]const u8 = null,
         purge: bool = false,
+    };
+
+    const CleanOptions = struct {
+        prefix: []const u8 = "/",
     };
 };
 
@@ -136,6 +142,9 @@ fn parseCommand(args: [][:0]u8) !?ParsedCommand {
         },
         .remove => {
             result.options = .{ .remove = try parseRemoveOptions(args[arg_idx..], &arg_idx) };
+        },
+        .clean => {
+            result.options = .{ .clean = try parseCleanOptions(args[arg_idx..], &arg_idx) };
         },
         else => {},
     }
@@ -269,6 +278,28 @@ fn parseRemoveOptions(args: [][:0]u8, arg_idx: *usize) !CommandOptions.RemoveOpt
     return opts;
 }
 
+fn parseCleanOptions(args: [][:0]u8, arg_idx: *usize) !CommandOptions.CleanOptions {
+    var opts = CommandOptions.CleanOptions{};
+    var i: usize = 0;
+
+    while (i < args.len) {
+        const arg = args[i];
+
+        if (std.mem.eql(u8, arg, "--prefix")) {
+            if (i + 1 >= args.len) {
+                std.debug.print("--prefix requires an argument\n", .{});
+                return error.InvalidArgment;
+            }
+            opts.prefix = args[i + 1];
+            i += 2;
+        } else {
+            break;
+        }
+    }
+    arg_idx.* += i;
+    return opts;
+}
+
 fn executeCommand(allocator: std.mem.Allocator, parsed: ParsedCommand) !void {
     switch (parsed.command) {
         .install => {
@@ -306,7 +337,8 @@ fn executeCommand(allocator: std.mem.Allocator, parsed: ParsedCommand) !void {
             std.debug.print("info command not yet implemented\n", .{});
         },
         .clean => {
-            std.debug.print("clean command not yet implemented\n", .{});
+            const opts = parsed.options.clean;
+            try clean.clean_cache(allocator, opts.prefix);
         },
         .version => {
             std.debug.print("cpsi version {s}\n", .{VERSION});

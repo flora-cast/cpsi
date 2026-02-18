@@ -64,7 +64,6 @@ pub fn decompressFileBuffered(
     output_path: []const u8,
     allocator: std.mem.Allocator,
 ) !void {
-    std.debug.print("input: {s}\noutput: {s}\n", .{ input_path, output_path });
     const input_file = try std.fs.openFileAbsolute(input_path, .{});
     defer input_file.close();
 
@@ -89,6 +88,7 @@ fn unpackTarZstd(
     defer allocator.free(decompressed_tar_file);
 
     try decompressFileBuffered(package_file, decompressed_tar_file, allocator);
+    defer utils.deleteFile(decompressed_tar_file);
 
     // initialize pathlist
     var pathlist = std.ArrayList([]const u8){};
@@ -126,8 +126,6 @@ pub fn extractTar(allocator: std.mem.Allocator, extracted_array: *std.array_list
         const path = try allocator.dupe(u8, entry.name);
         errdefer allocator.free(path);
         try extracted_array.append(allocator, path);
-
-        std.debug.print("unpack(): unpacking {s}\n", .{path});
 
         switch (entry.kind) {
             .file => {
