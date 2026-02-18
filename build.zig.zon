@@ -39,7 +39,7 @@
         .hash = "toml-0.3.0-bV14BTd8AQA-wZERtB3dvRE3eSZ-m48AyXFUGkZ_Tm3d",
     }, .zstig = .{
         .url = "https://github.com/flora-cast/zstig/archive/refs/tags/0.1.3.zip",
-        .hash = "zstig-0.1.1-dIJrnot0AgCONQksOmYVKUGMZSD78VUO8HbqRhRJ0T9X",
+        .hash = "zstig-0.1.1-dIJrnol0AgCbU4R2zDVsAprJr19YstjLIUcKHEV7avdD",
     } },
     .paths = .{
         "build.zig",
