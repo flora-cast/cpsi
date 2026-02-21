@@ -5,6 +5,8 @@ const reader = package.reader;
 const structs = package.structs;
 const constants = @import("constants");
 
+pub const depends = @import("./depends.zig");
+
 pub fn search(allocator: std.mem.Allocator, pkgs: [][]const u8) !void {
     const parsed_repos = repo_conf.parse_repos(allocator) catch |err| {
         std.debug.print("Failed to parse repos.toml: {any}\n", .{err});

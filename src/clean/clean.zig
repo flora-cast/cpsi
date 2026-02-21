@@ -46,7 +46,7 @@ fn remove_recursive(target_files: [][]u8) !void {
 
     for (target_files) |target_file| {
         current += 1;
-        std.debug.print("\r\x1b[2Kclean: ({d}/{d}) {s}", .{ target_files.len, current, target_file });
+        std.debug.print("\r\x1b[2Kclean: ({d}/{d}) {s}", .{ current, target_files.len, target_file });
         try std.fs.deleteFileAbsolute(target_file);
     }
 

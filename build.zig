@@ -103,6 +103,15 @@ pub fn build(b: *std.Build) void {
         .{ .name = "constants", .module = constants },
         .{ .name = "repos_conf", .module = repos_conf },
         .{ .name = "package", .module = package },
+        .{ .name = "installed", .module = installed },
+    } });
+
+    const remove = b.addModule("remove", .{ .root_source_file = b.path("src/remove/remove.zig"), .target = target, .link_libc = true, .imports = &.{
+        .{ .name = "constants", .module = constants },
+        .{ .name = "installed", .module = installed },
+        .{ .name = "install", .module = install },
+        .{ .name = "utils", .module = utils },
+        .{ .name = "search", .module = search },
     } });
 
     const list = b.addModule("list", .{ .root_source_file = b.path("src/list/list.zig"), .target = target, .link_libc = true, .imports = &.{
@@ -134,6 +143,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "clean", .module = clean },
             .{ .name = "list", .module = list },
             .{ .name = "package", .module = package },
+            .{ .name = "remove", .module = remove },
         } }),
     });
 

@@ -5,6 +5,7 @@ const install = @import("install");
 const search = @import("search");
 const list = @import("list");
 const clean = @import("clean");
+const remove = @import("remove");
 const help_message = @embedFile("./templates/help_message");
 
 // rowan -> pre-alpha | amary -> alpha | flower -> beta | wood -> stable
@@ -69,7 +70,6 @@ const CommandOptions = union(enum) {
 
     const RemoveOptions = struct {
         prefix: ?[]const u8 = null,
-        purge: bool = false,
     };
 
     const CleanOptions = struct {
@@ -266,9 +266,6 @@ fn parseRemoveOptions(args: [][:0]u8, arg_idx: *usize) !CommandOptions.RemoveOpt
             }
             opts.prefix = args[i + 1];
             i += 2;
-        } else if (std.mem.eql(u8, arg, "--purge")) {
-            opts.purge = true;
-            i += 1;
         } else {
             break;
         }
@@ -327,8 +324,12 @@ fn executeCommand(allocator: std.mem.Allocator, parsed: ParsedCommand) !void {
             try search.search(allocator, parsed.positional_args);
         },
         .remove => {
+            if (parsed.positional_args.len == 0) {
+                std.debug.print("usage: remove [options] <PACKAGES...>\n", .{});
+                std.process.exit(1);
+            }
             const opts = parsed.options.remove;
-            std.debug.print("remove command not yet implemented (purge: {}, prefix: {?s})\n", .{ opts.purge, opts.prefix });
+            try remove.remove(allocator, parsed.positional_args, .{ .prefix = opts.prefix });
         },
         .list => {
             try list.list_packages(allocator);

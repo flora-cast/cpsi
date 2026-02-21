@@ -275,7 +275,7 @@ fn exec_scripts(allocator: std.mem.Allocator, prefix: []const u8, package_name: 
     _ = package_name;
 }
 
-fn is_root() bool {
+pub fn is_root() bool {
     return std.os.linux.getuid() == 0;
 }
 

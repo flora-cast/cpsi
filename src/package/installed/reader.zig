@@ -1,50 +1,63 @@
 const structs = @import("./structs.zig");
 const std = @import("std");
 
-pub fn readPackage(allocator: std.mem.Allocator, file: []const u8) !structs.Package {
-    const file_opened = try std.fs.cwd().openFile(file, .{});
-    defer file_opened.close();
+pub fn parsePackage(allocator: std.mem.Allocator, content: []const u8) !structs.InstalledPackage {
+    var splited = std.mem.splitAny(u8, content, "\n");
 
-    const stat = try file_opened.stat();
-    const content = try file_opened.readToEndAlloc(allocator, stat.size + 1);
-    defer allocator.free(content);
+    var name: ?[]const u8 = null;
+    var version: ?[]const u8 = null;
+    var pathlist: [][]const u8 = &.{};
+    var depends: [][]const u8 = &.{};
 
-    const splited = std.mem.splitAny(u8, content, "\n");
-
-    var name: []u8 = undefined;
-    var version: []u8 = undefined;
-    var pathlist: [][]u8 = undefined;
-    var depends: [][]u8 = undefined;
-
-    for (splited) |line| {
+    while (splited.next()) |line| {
         if (line.len == 0) continue;
-        const parts = std.mem.splitAny(u8, line, "=");
-        if (parts.count() != 2) continue;
-        const key = parts.next().?;
-        const value = parts.next().?;
+        var parts = std.mem.splitAny(u8, line, "=");
+        const key = parts.next() orelse continue;
+        const value = parts.next() orelse continue;
 
         if (std.mem.eql(u8, key, "name")) {
             name = try allocator.dupe(u8, value);
         } else if (std.mem.eql(u8, key, "version")) {
             version = try allocator.dupe(u8, value);
         } else if (std.mem.eql(u8, key, "pathlist")) {
-            const splited_pathlist = std.mem.splitAny(u8, value, ":");
-            pathlist = try allocator.alloc([]u8, splited_pathlist.count());
-            for (splited_pathlist) |path| {
-                pathlist[pathlist.len - 1] = try allocator.dupe(u8, path);
+            var splited_pathlist = std.mem.splitAny(u8, value, ":");
+            var list = std.ArrayList([]const u8){};
+            errdefer {
+                for (list.items) |item| allocator.free(item);
+                list.deinit(allocator);
             }
+            while (splited_pathlist.next()) |path| {
+                if (path.len == 0) continue;
+                try list.append(allocator, try allocator.dupe(u8, path));
+            }
+            pathlist = try list.toOwnedSlice(allocator);
         } else if (std.mem.eql(u8, key, "depends")) {
-            const splited_depends = std.mem.splitAny(u8, value, ":");
-            depends = try allocator.alloc([]u8, splited_depends.count());
-            for (splited_depends) |dep| {
-                depends[depends.len - 1] = try allocator.dupe(u8, dep);
+            var splited_depends = std.mem.splitAny(u8, value, ":");
+            var list = std.ArrayList([]const u8){};
+            errdefer {
+                for (list.items) |item| allocator.free(item);
+                list.deinit(allocator);
             }
+            while (splited_depends.next()) |dep| {
+                if (dep.len == 0) continue;
+                try list.append(allocator, try allocator.dupe(u8, dep));
+            }
+            depends = try list.toOwnedSlice(allocator);
         }
     }
 
-    return structs.Package{
-        .name = name,
-        .version = version,
+    return structs.InstalledPackage{
+        .name = name orelse return error.MissingField,
+        .version = version orelse return error.MissingField,
         .pathlist = pathlist,
+        .depends = depends,
     };
+}
+
+pub fn readPackage(allocator: std.mem.Allocator, file: []const u8) !structs.InstalledPackage {
+    const file_opened = try std.fs.openFileAbsolute(file, .{});
+    defer file_opened.close();
+    const content = try file_opened.readToEndAlloc(allocator, std.math.maxInt(u32));
+    defer allocator.free(content);
+    return parsePackage(allocator, content);
 }
