@@ -4,6 +4,20 @@
 
 Package Manager for **Shary OS**
 
+> [!IMPORTANT]
+> This repository contains an unfinished, early implementation of cpsi originally developed for Shary OS.
+>
+> Development has moved to the new **CPS Linux** ecosystem:
+>
+> **https://github.com/CPS-Linux/cpsi**
+>
+> The modern cpsi is a complete redesign and rewrite. It does **not** share the same architecture, package format, repository format, build system integration, dependency resolution strategy, or internal design as this project.
+>
+> Therefore, this repository should not be considered representative of the current cpsi project.
+>
+> It is preserved solely for historical and educational purposes.
+
+
 ## ⚠️ Under Development
 
 **cpsi is currently under active development.** 
@@ -12,7 +26,7 @@ Functionality, APIs, and behavior may change significantly in future releases.
 
 ## Overview
 
-**cpsi** (Shary Package System Installer) is a package manager designed specifically for Shary OS. 
+**cpsi** (Clos Package System Installer) is a package manager designed specifically for Shary OS. 
 
 It provides a simple and efficient way to manage software packages on your Shary OS system.
 
